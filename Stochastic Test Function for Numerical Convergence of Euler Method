@@ -1,0 +1,102 @@
+import numpy as np
+import pandas as pd 
+import matplotlib.pyplot as plt
+from scipy.stats import normaltest
+import seaborn as sns
+
+#Set Parameters 
+
+mu = .10 
+theta = 2
+sigma = .02
+h=1
+s0=10
+
+#Run simulation for T=10
+
+T = 20
+S_10 = np.zeros(T)
+S_10[0] = s0
+
+for i in range(1, T):
+    z = np.random.normal()
+    S_10[i] = S_10[i - 1] + mu*(theta - S_10[i - 1]) * h + sigma * np.sqrt(h) * z
+
+    
+mean = np.mean(S_10)
+variance = np.var(S_10)
+
+#Plot Results
+
+plt.plot(S_10)
+plt.xlabel('Time Interval')
+plt.ylabel('S')
+plt.title('Linear Test SDE')
+plt.legend([f'Mean: {mean:.8f}\nVariance: {variance:.8f}'], loc='best')
+plt.grid(False)
+plt.show()
+
+#Run simulation for T=100
+
+T = 100
+S_100 = np.zeros(T)
+S_100[0] = s0
+
+for i in range(1, T):
+    z = np.random.normal()
+    S_100[i] = S_100[i - 1] + mu*(theta - S_100[i - 1]) * h + sigma * np.sqrt(h) * z
+
+    
+mean = np.mean(S_100)
+variance = np.var(S_100)
+
+#Plot Results
+
+plt.plot(S_100)
+plt.xlabel('Time Interval')
+plt.ylabel('S')
+plt.title('Linear Test SDE')
+plt.legend([f'Mean: {mean:.8f}\nVariance: {variance:.8f}'], loc='best')
+plt.grid(False)
+plt.show()
+
+#Run simulation for T=1000
+
+T = 1000
+S_1000 = np.zeros(T)
+S_1000[0] = s0
+
+for i in range(1,T):
+    z= np.random.normal()
+    S_1000[i] = S_1000[i-1]+mu*(theta-S_1000[i-1])*h +sigma*np.sqrt(h)*z
+    
+mean = np.mean(S_1000)
+variance = np.var(S_1000)
+
+#Plot Results
+
+plt.plot(S_1000)
+plt.xlabel('Time Interval')
+plt.ylabel('S')
+plt.title('Linear Test SDE')
+plt.legend([f'Mean: {mean:.8f}\nVariance: {variance:.8f}'], loc='best')
+plt.grid(False)
+plt.show()
+
+#Perform K-Squard Test
+
+statistic_10, p_value_10 = normaltest(S_10)
+statistic_100, p_value_100 = normaltest(S_100)
+statistic_1000, p_value_1000 = normaltest(S_1000)
+
+#Plot Density
+
+plt.figure(figsize=(15, 9))
+
+ax = sns.kdeplot(S_10, label=f"T=20, t stat: {statistic_10:.2f}")
+ax = sns.kdeplot(S_100,label=f"T=100, t stat: {statistic_100:.2f}")
+ax = sns.kdeplot(S_1000, label=f"T=1000, t stat: {statistic_1000:.2f}")
+
+plt.title('Distrubution of Numerical Solution')
+plt.xlabel('S_Value')
+plt.legend()
