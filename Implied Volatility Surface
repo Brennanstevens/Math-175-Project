@@ -1,0 +1,227 @@
+import pandas as pd
+import numpy as np
+from scipy.stats import norm
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from __future__ import division
+from decimal import Decimal, getcontext
+
+#Define Black-Scholes and Vega Functions 
+
+def BS(S,K,r,t,sigma):
+
+    d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * t) / (sigma * np.sqrt(t))
+    d2 = (np.log(S / K) + (r - 0.5 * sigma ** 2) * t) / (sigma * np.sqrt(t))
+    
+    return S * norm.cdf(d1) - K * np.exp(-r * t) * norm.cdf(d2)
+
+
+def Vega(S,K,r,t,sigma):
+        d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * t) / (sigma * np.sqrt(t))
+        return S * np.sqrt(t) * norm.pdf(d1)* np.exp(-r*t)
+
+#Define Newtons Method 
+
+def implied_vol(S,K,r,t,V,tol=.5):
+    
+    """
+    S: Stock Price
+    K: Strike Price
+    r: Risk Free Rate 
+    t: Time to Maturity
+    V: Call Value 
+    
+    """
+    
+    max_iter = 100
+    vol_old  = .5 #initial Guess
+    
+    for i in range(max_iter):
+        
+        S=float(S)
+        K=float(K)
+        
+        bs_price = BS(S,K,r,t,vol_old)
+        
+        vega = Vega(S,K,r,t,vol_old) 
+        
+        vol_new = vol_old - (bs_price - V) / vega
+        
+        new_bs_price = BS(S,K,r,t,vol_new)
+        
+        if abs(vol_new-vol_old) < tol or abs(new_bs_price - V) < tol: 
+            break
+        
+        vol_old = vol_new
+        
+    implied_vol = vol_new
+    return implied_vol
+
+#Collect Data
+
+data = pd.DataFrame({'Time to Maturity': [], 'Strike':[],'Value of Call':[], 'Implied Volitility':[]})
+
+#5 DTE
+
+data.loc[0] = [5/365,508,2.49,0]
+data.loc[1] = [5/365,495,13.16,0]
+data.loc[2] = [5/365,490,18.07,0]
+data.loc[3] = [5/365,485,23.04,0]
+data.loc[4] = [5/365,480,28.02,0]
+data.loc[5] = [5/365,475,32.94,0]
+data.loc[6] = [5/365,470,37.93,0]
+data.loc[7] = [5/365,465,42.95,0]
+data.loc[8] = [5/365,520,.05,0]
+data.loc[9] = [5/365,530,.01,0]
+data.loc[10] = [5/365,550,.01,0]
+
+
+#10 DTE 
+
+data.loc[11] = [10/365,508,3.49,0]
+data.loc[12] = [10/365,495,13.69,0]
+data.loc[13] = [10/365,490,18.48,0]
+data.loc[14] = [10/365,485,23.36,0]
+data.loc[15] = [10/365,480,28.33,0]
+data.loc[16] = [10/365,475,33.17,0]
+data.loc[17] = [10/365,470,38.14,0]
+data.loc[18] = [10/365,465,43.12,0]
+data.loc[19] = [10/365,520,.28,0]
+data.loc[20] = [10/365,530,.03,0]
+data.loc[21] = [10/365,550,.01,0]
+
+
+#20 DTE
+
+data.loc[22] = [20/365,508,5.78,0]
+data.loc[23] = [20/365,495,15.19,0]
+data.loc[24] = [20/365,490,19.72,0]
+data.loc[25] = [20/365,485,24.44,0]
+data.loc[26] = [20/365,480,29.31,0]
+data.loc[27] = [20/365,475,34.20,0]
+data.loc[28] = [20/365,470,39.12,0]
+data.loc[29] = [20/365,465,44.06,0]
+data.loc[30] = [20/365,520,1.41,0]
+data.loc[31] = [20/365,530,.30,0]
+data.loc[32] = [20/365,550,.04,0]
+
+#55 DTE 
+
+data.loc[33] =  [55/365,508,10.41,0]
+data.loc[34] =  [55/365,495,19.34,0]
+data.loc[35] = [55/365,490,23.42,0]
+data.loc[36] = [55/365,485,27.78,0]
+data.loc[37] = [55/365,480,32.25,0]
+data.loc[38] = [55/365,475,36.85,0]
+data.loc[39] = [55/365,470,41.52,0]
+data.loc[40] = [55/365,465,46.26,0]
+data.loc[41] = [55/365,520,4.85,0]
+data.loc[42] = [55/365,530,2.23,0]
+data.loc[43] = [55/365,550,.36,0]
+
+#83 DTE
+
+data.loc[44] = [83/365,508,14.22,0]
+data.loc[45] = [83/365,495,23.16,0]
+data.loc[46] = [83/365,490,27.13,0]
+data.loc[47] = [83/365,485,31.33,0]
+data.loc[48] = [83/365,480,35.65,0]
+data.loc[49] = [83/365,475,40.08,0]
+data.loc[50] = [83/365,470,44.62,0]
+data.loc[51] = [83/365,465,49.22,0]
+data.loc[52] = [83/365,520,8.00,0]
+data.loc[53] = [83/365,530,4.53,0]
+data.loc[54] = [83/365,550,1.17,0]
+
+
+#118 DTE
+
+data.loc[55] = [118/365,508,18.08,0]
+data.loc[56] = [118/365,495,27.17,0]
+data.loc[57] = [118/365,490,31.08,0]
+data.loc[58] = [118/365,485,35.13,0]
+data.loc[59] = [118/365,480,39.32,0]
+data.loc[60] = [118/365,475,43.63,0]
+data.loc[61] = [118/365,470,48.03,0]
+data.loc[62] = [118/365,465,52.51,0]
+data.loc[63] = [118/365,520,11.51,0]
+data.loc[64] = [118/365,530,7.39,0]
+data.loc[65] = [118/365,550,2.59,0]
+
+#174 DTE
+
+data.loc[66] = [174/365,510,22.61,0]
+data.loc[67] = [174/365,495,31.98,0]
+data.loc[68] = [174/365,490,36.48,0]
+data.loc[69] = [174/365,485,40.39,0]
+data.loc[70] = [174/365,480,44.53,0]
+data.loc[71] = [174/365,475,48.65,0]
+data.loc[72] = [174/365,470,52.75,0]
+data.loc[73] = [174/365,465,57.11,0]
+data.loc[74] = [174/365,520,16.79,0]
+data.loc[75] = [174/365,530,11.95,0]
+data.loc[76] = [174/365,550,5.39,0]
+
+
+#300 DTE
+
+data.loc[77] = [300/365,510,34.83,0]
+data.loc[78] = [300/365,495,44.63,0]
+data.loc[79] = [300/365,490,48.29,0]
+data.loc[80] = [300/365,485,52.00,0]
+data.loc[81] = [300/365,480,55.79,0]
+data.loc[82] = [300/365,475,59.65,0]
+data.loc[83] = [300/365,470,63.59,0]
+data.loc[84] = [300/365,465,67.60,0]
+data.loc[85] = [300/365,520,28.64,0]
+data.loc[86] = [300/365,530,23.04,0]
+data.loc[87] = [300/365,550,13.89,0]
+
+#209 DTE
+
+data.loc[88] = [209/365,510,26.07,0]
+data.loc[89] = [209/365,495,36.14,0]
+data.loc[90] = [209/365,490,39.88,0]
+data.loc[91] = [209/365,485,43.73,0]
+data.loc[92] = [209/365,480,47.70,0]
+data.loc[93] = [209/365,475,51.76,0]
+data.loc[94] = [209/365,470,55.90,0]
+data.loc[95] = [209/365,465,60.14,0]
+data.loc[96] = [209/365,520,20.07,0]
+data.loc[97] = [209/365,530,14.91,0]
+data.loc[98] = [209/365,550,7.43,0]
+
+#Impliment Newtons Method
+
+r=0.05
+S=507.85
+
+for i in range(0,99):
+    
+    data.iloc[i,3] = implied_vol(S, data.iloc[i,1], r , data.iloc[i,0], data.iloc[i,2] )
+
+#Plot Data 
+
+x_data = 1 / (data.iloc[:, 1] / S)  # Column 1 on x-axis
+y_data = data.iloc[:, 0]  # Column 0 on y-axis
+z_data = data.iloc[:, 3]  # Column 3 on z-axis
+
+# Create a 3D plot
+fig = plt.figure(figsize=(18,10))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plotting the surface
+ax.plot_trisurf(x_data, y_data, z_data, cmap='plasma', edgecolor='none')
+
+# Labeling axes
+ax.set_title('SPY: January 23,2024 Implied Volitility Surface')
+ax.set_xlabel('Moneyness M=S/K')
+ax.set_ylabel('Time to Maturity')
+ax.set_zlabel('Implied Volitility')
+
+#Rotate Plot
+ax.view_init(elev=20, azim=130)
+ax.set_zlabel('Implied Volatility', labelpad=0)
+
+# Show plot
+plt.show()    
