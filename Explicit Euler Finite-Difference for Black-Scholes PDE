@@ -1,0 +1,57 @@
+format long 
+
+%Set Parameters 
+
+T=.25;              %Maturity 
+K=10;               %Strike
+r=0.1;              %Risk Free Rate
+sigma=0.4;          %Volitility
+M=100;              %Number of timesteps
+N=50;               %Number of asset prices
+S_max = 25;         %Maximum Asset Price 
+k = T/M;            %Time Step
+h = S_max/N;        %Price Step
+
+
+%Values Matrix
+
+Values = zeros(N+1,M+1);
+
+%Discretization of Asset and tau (T-t) 
+
+S=(0:N)*h;
+tau = (0:M)*k;
+
+%Initial Conditions 
+
+Values(1:N+1,1) = max(S-K,0);
+
+%Boundry Conditions
+
+Values(1,1:M+1)=0;
+Values(N+1,1:M+1)= S_max - K*exp(-r*tau); 
+
+%Impliment Explicit Algorithm
+
+for j=1:M
+    for n=2:N
+        Values(n,j+1)=.5*k*(sigma*sigma*n*n-r*n)*Values(n-1,j)+(1-k*(sigma*sigma*n*n+r))*Values(n,j)+.5*k*(sigma*sigma*n*n+r*n)*Values(n+1,j);
+    end
+end
+
+%Check for Stability
+
+condition = 1 / ((sigma*sigma)*(N-1) + .5*r);
+
+if k < condition
+    disp('Stability Condition Satisfied')
+else
+    disp('Warning: Stability Condition Not Satisfied')
+end
+
+figure;
+surf(tau, S, Values);
+xlabel('Time (T - t)');
+ylabel('Asset Price');
+zlabel('Option Value');
+title('Surface Plot of Black-Scholes Call Option Value');
