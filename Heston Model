@@ -1,0 +1,75 @@
+import numpy as np
+import pandas as pd
+import matplotlib as plt
+import matplotlib.pyplot as plt
+import yfinance as yfd
+
+#Gather Data For Long Term Average Variance and Inital Stock Price
+
+stock = 'SPY'
+
+start_date = '2018-01-01'
+end_date = '2023-01-01'
+
+stock_data = yf.download(stock, start=start_date, end=end_date)
+stock_prices = stock_data['Adj Close']
+stock_returns = stock_prices.pct_change()
+days = stock_prices.shape[0]
+
+#Set Parameters
+
+omega = np.std(stock_returns)**2 #Set to long term average volitility  
+theta = .5 #Mean reversion of the volitity process 
+rho   = .7 #Correlation between stock price process and volitility process 
+epsilon = omega #Set the volitility of the volitility process equal to omega  
+
+T=252 #Set time frame to be 1 year (252 trading days)
+h=1 #Set time step to be 1 day  
+
+mu = np.mean(stock_returns) #Set drift to be long term average daily return
+
+#Initialize Stock and Volitility process matrix   
+
+V0 = omega #Set Initial Volitility Equal to Long Term Average Volitility 
+S0 = stock_prices[-1] #Set Initial Stock Price to Latest Stock Price in Data
+
+
+S = np.zeros(T)
+V = np.zeros(T)
+
+S[0] = S0
+V[0] = V0
+
+# Create 2 standard normal random varibles with corr rho
+
+Zs = np.zeros(T)
+Zx = np.zeros(T)
+Zv = np.zeros(T)
+
+for i in range(0,T):
+    Zs[i] = np.random.normal()
+    Zx[i] = np.random.normal()
+    
+
+Zv = rho*Zs + np.sqrt(1-rho**2)*Zx   
+
+#Impliment Euler Method
+
+for i in range(1,T):    
+    
+    V[i] = V[i-1] + theta*(omega-V[i-1])*h + epsilon*np.sqrt(V[i-1]*h)*Zv[i]
+    
+    #Impliment Full truncation Scheme 
+    
+    V[i] = max(V[i],0)
+    
+    S[i] = S[i-1] + mu*S[i-1]*h + S[i-1]*np.sqrt(V[i-1]*h)*Zs[i]
+    
+#Plot Results
+
+plt.plot(S, label = 'Heston Model')
+plt.xlabel('Time Intervals')
+plt.ylabel('Price')
+plt.title('Heston Model: SPY')
+plt.legend()
+plt.show()
